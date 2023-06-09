@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/rverton/webanalyze"
+	"github.com/channyein1337/webanalyzer"
 )
 
 var (
@@ -35,14 +35,14 @@ var (
 func init() {
 	flag.StringVar(&outputMethod, "output", "stdout", "output format (stdout|csv|json)")
 	flag.BoolVar(&update, "update", false, "update technologies file to current dir")
-	flag.IntVar(&workers, "worker", 4, "number of worker")
+	flag.IntVar(&workers, "w", 4, "number of worker")
 	flag.StringVar(&techsFilename, "apps", "technologies.json", "technologies definition file")
-	flag.StringVar(&host, "host", "", "single host to test")
-	flag.StringVar(&hosts, "hosts", "", "filename with hosts, one host per line.")
-	flag.IntVar(&crawlCount, "crawl", 0, "links to follow from the root page (default 0)")
+	flag.StringVar(&host, "u", "", "single host to test")
+	flag.StringVar(&hosts, "l", "", "filename with hosts, one host per line.")
+	flag.IntVar(&crawlCount, "c", 0, "links to follow from the root page (default 0)")
 	flag.BoolVar(&searchSubdomain, "search", true, "searches all urls with same base domain (i.e. example.com and sub.example.com)")
-	flag.BoolVar(&silent, "silent", false, "avoid printing header (default false)")
-	flag.BoolVar(&redirect, "redirect", false, "follow http redirects (default false)")
+	flag.BoolVar(&silent, "s", false, "avoid printing header (default false)")
+	flag.BoolVar(&redirect, "r", false, "follow http redirects (default false)")
 }
 
 func main() {
@@ -170,21 +170,25 @@ func output(result webanalyze.Result, wa *webanalyze.WebAnalyzer, outWriter *csv
 
 	switch outputMethod {
 	case "stdout":
-		fmt.Printf("%v (%.1fs):\n", result.Host, result.Duration.Seconds())
-		for _, a := range result.Matches {
+		if len(result.Matches) <= 0 {
+			fmt.Printf("    <no results>\n")
+			return
+		}
+		fmt.Printf("%v : [", result.Host)
+		for i, a := range result.Matches {
 
 			var categories []string
 
 			for _, cid := range a.App.Cats {
 				categories = append(categories, wa.CategoryById(cid))
 			}
-
-			fmt.Printf("    %v, %v (%v)\n", a.AppName, a.Version, strings.Join(categories, ", "))
+			
+			fmt.Printf("%v,  (%v)", a.AppName, strings.Join(categories, ", "))
+			if i != len(result.Matches) - 1 {
+				fmt.Printf(" | ")
+			}
 		}
-		if len(result.Matches) <= 0 {
-			fmt.Printf("    <no results>\n")
-		}
-
+		fmt.Println("]")
 	case "csv":
 		for _, m := range result.Matches {
 			outWriter.Write(
