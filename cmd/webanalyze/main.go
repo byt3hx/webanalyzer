@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/rverton/webanalyze"
+	"github.com/channyein1337/webanalyze"
 )
 
 var (
