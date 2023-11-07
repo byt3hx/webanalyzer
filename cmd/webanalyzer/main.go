@@ -236,9 +236,19 @@ func printOption(name string, value interface{}) {
 }
 
 func lookupFolders(filename string) (string, error) {
+	if filepath.IsAbs(filename) {
+		if _, err := os.Stat(filename); err == nil {
+			return filename, nil
+		} else {
+			return "", fmt.Errorf("provided file '%s' not found", filename)
+		}
+	}
+
+	
 	executable, _ := os.Executable()
+	executableDir := filepath.Dir(executable)
 	home, _ := os.UserHomeDir()
-	folders := []string{"./", executable, home}
+	folders := []string{"./", executableDir, home}
 
 	for _, folder := range folders {
 		path := filepath.Join(folder, filename)
@@ -249,5 +259,5 @@ func lookupFolders(filename string) (string, error) {
 		}
 	}
 
-	return "", errors.New("could not find technologies file")
+	return "", errors.New("could not find technologies file in the default locations")
 }
