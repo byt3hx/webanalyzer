@@ -171,12 +171,11 @@ func output(result webanalyze.Result, wa *webanalyze.WebAnalyzer, outWriter *csv
 	switch outputMethod {
 	case "stdout":
 		if len(result.Matches) <= 0 {
-			fmt.Printf("    <no results>\n")
+			fmt.Printf("%v : [no technologies detected]\n", result.Host)
 			return
 		}
 		fmt.Printf("%v : [", result.Host)
 		for i, a := range result.Matches {
-
 			var categories []string
 
 			for _, cid := range a.App.Cats {
@@ -190,19 +189,29 @@ func output(result webanalyze.Result, wa *webanalyze.WebAnalyzer, outWriter *csv
 		}
 		fmt.Println("]")
 	case "csv":
-		for _, m := range result.Matches {
+		if len(result.Matches) <= 0 {
 			outWriter.Write(
 				[]string{
 					result.Host,
-					strings.Join(m.CatNames, ","),
-					m.AppName,
-					m.Version,
+					"",
+					"no technologies detected",
+					"",
 				},
 			)
+		} else {
+			for _, m := range result.Matches {
+				outWriter.Write(
+					[]string{
+						result.Host,
+						strings.Join(m.CatNames, ","),
+						m.AppName,
+						m.Version,
+					},
+				)
+			}
 		}
 		outWriter.Flush()
 	case "json":
-
 		output := struct {
 			Hostname string             `json:"hostname"`
 			Matches  []webanalyze.Match `json:"matches"`
